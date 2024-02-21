@@ -1,0 +1,6 @@
+
+3 Traceback encountered
+
+pip install pyparsing==2.4.7
+pip install matplotlib==3.0.0
+python grade_c1m7.py racetrack_waypoints.txt controller_output\trajectory.txt
