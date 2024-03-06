@@ -96,8 +96,8 @@ def display_path(results):
     '''
 
     fig, ax = plt.subplots()
-    plt.plot(results['waypoints'][:,0], results['waypoints'][:,1], '*', label='waypoints')
-    plt.plot(results['solution'][:,0], results['solution'][:,1], label='solution')
+    plt.plot(results['waypoints'][:,0], results['waypoints'][:,1], '*', label='pontos de ref')
+    plt.plot(results['solution'][:,0], results['solution'][:,1], label='solução')
     for i in range(results['waypoints'].shape[0]):
         center = (results['waypoints'][i,0],results['waypoints'][i,1])
         circle = plt.Circle(center, results['d_thresh'], color='g', fill=False)
@@ -106,18 +106,25 @@ def display_path(results):
     plt.legend()
     plt.xlabel('x (m)')
     plt.ylabel('y (m)')
-    plt.title('Waypoints and Solution Path')
+    plt.title('Pontos de ref e Caminho da solução')
+    #plt.title('Waypoints and Solution Path')
 
     plt.subplots()
-    plt.plot(results['waypoints'][:,2], label='reference speed')
-    plt.plot(results['solution'][results['inds'],2], label='vehicle speed')
-    plt.plot(results['waypoints'][:,2] + results['v_thresh'], '--', color = 'C2')
+    plt.plot(results['waypoints'][:,2], label='velocidade de ref')
+    #plt.plot(results['waypoints'][:,2], label='reference speed')
+    plt.plot(results['solution'][results['inds'],2], label='velocidade veiculo')
+    #plt.plot(results['solution'][results['inds'],2], label='vehicle speed')
+    plt.plot(results['waypoints'][:,2] + results['v_thresh'], '--', color = 'C2', label='limites')
+    #plt.plot(results['waypoints'][:,2] + results['v_thresh'], '--', color = 'C2')
     plt.plot(results['waypoints'][:,2] - results['v_thresh'], '--', color = 'C2')
 
     plt.legend()
-    plt.xlabel('Waypoint #')
-    plt.ylabel('Speed (m/s)')
-    plt.title('Speed Profiles')
+    #plt.xlabel('Waypoint #')
+    plt.xlabel('Pontos de Referência #')
+    #plt.ylabel('Speed (m/s)')
+    plt.ylabel('Velocidade (m/s)')
+    #plt.title('Speed Profiles')
+    plt.title('Perfil de Velocidade')
 
     plt.show(block=True)
 
