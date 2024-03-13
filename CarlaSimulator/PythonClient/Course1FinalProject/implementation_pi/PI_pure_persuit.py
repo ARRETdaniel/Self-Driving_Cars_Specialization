@@ -120,7 +120,6 @@ class Controller2D(object):
         #PID Gains
         k_p = 1 / 1.13
         k_i = k_p / 10
-        k_d = k_p * 0.1  # Adjust the multiplier as needed
 
         #latteral controller gains
         k = 2
@@ -179,18 +178,10 @@ class Controller2D(object):
             # feedback controller
             # ====================================================
 
-            #sample_time = 1 / 30                                                         # time step = 1 / FPS
-            dt = t - self.vars.t_previous
-            #v_error = v_desired - v
-           # self.vars.sum_integral = self.vars.sum_integral + ( v_error * sample_time )  #integration term is turned into
-           # derivative = (v_error - self.vars.v_previous_error) /
-            v_current_error = v_desired - v
-            v_total_error = self.vars.v_total_error + v_current_error * dt
-            v_error_rate = (v_current_error - self.vars.v_previous_error) / dt
-           # P_throttle = Kp_throttle * v_current_error
-            #I_throttle = Ki_throttle * v_total_error
-            #D_throttle = Kd_throttle * v_error_rate
-            throttle_feedback = ( k_p * v_current_error ) + (k_i * v_total_error)# + (k_d * v_error_rate)
+            sample_time = 1 / 30                                                         # time step = 1 / FPS
+            v_error = v_desired - v
+            self.vars.sum_integral = self.vars.sum_integral + ( v_error * sample_time )  #integration term is turned into submission
+            throttle_feedback = ( k_p * v_error ) + ( k_i * self.vars.sum_integral )
 
             throttle_output = throttle_feedback + throttle_forward
             brake_output    = 0
@@ -234,7 +225,7 @@ class Controller2D(object):
             self.set_steer(steer_output)        # in rad (-1.22 to 1.22)
             self.set_brake(brake_output)        # in percent (0 to 1)
 
-            print ("yaw: ",yaw," lookahead_distance: ",lookahead_distance," steer_output: ",steer_output," throttle_output:", throttle_output," brake_output:", brake_output)
+            print (yaw,"   ",lookahead_distance,"  ",steer_output)
 
         ######################################################
         ######################################################
@@ -247,7 +238,7 @@ class Controller2D(object):
             in the next iteration)
         """
         self.vars.v_previous = v  # Store forward speed to be used in next step
-        self.vars.v_total_error = v_total_error # From PID implementation
-        self.vars.v_previous_error = v_current_error # From PID implementation
+       # self.vars.v_total_error = v_total_error # From PID implementation
+       # self.vars.v_previous_error = v_current_error # From PID implementation
         self.vars.t_previous = t
         self.vars.steer_output_old = steer_output # Stanley controller

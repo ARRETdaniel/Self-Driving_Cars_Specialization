@@ -1,0 +1,33 @@
+Loading the Simulator with the Default Map
+\> C:
+\> cd \Coursera\CarlaSimulator
+\> CarlaUE4.exe -windowed -carla-no-networking -WeatherId=6 -benchmark -fps=30
+
+Loading the Simulator with the Race Track Map
+\> C:
+\> cd \Coursera\CarlaSimulator
+\> CarlaUE4.exe /Game/Maps/RaceTrack -windowed -carla-no-networking
+
+
+Loading the Simulator with a Fixed Time-Step  -fps=60 -quality-level=Epic
+CarlaUE4.exe /Game/Maps/RaceTrack -windowed -carla-no-networking -benchmark -fps=60 -quality-level=Epic -weatherId=6
+CarlaUE4.exe /Game/Maps/ -windowed -carla-no-networking -benchmark -fps=60 -quality-level=Epic -weatherId=6
+
+Testing CARLA in Server-Client Mode
+CarlaUE4.exe /Game/Maps/RaceTrack -windowed -carla-server -benchmark -fps=60 -quality-level=Epic
+Then, in another terminal (or the same terminal), run the example Python client
+(manual_control.py): python manual_control.py
+
+
+  #RUNNING SOLUTION
+  \> C:
+  \> cd \Coursera\CarlaSimulator
+  \> CarlaUE4.exe /Game/Maps/RaceTrack -windowed -carla-server -benchmark -fps=30
+
+   In another terminal, change the directory to go into the "Course1FinalProject" folder, under the "PythonClient" folder.
+  \> C:
+  \> cd \Coursera\CarlaSimulator\PythonClient\Course1FinalProject
+  \> python module_7.py
+
+
+- To close the CARLA simulation session, press Alt-F4

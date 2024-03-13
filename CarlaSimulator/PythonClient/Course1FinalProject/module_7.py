@@ -25,7 +25,7 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 import controller2d
-import configparser 
+import configparser
 
 # Script level imports
 sys.path.append(os.path.abspath(sys.path[0] + '/..'))
@@ -71,14 +71,14 @@ PLAYER_START_INDEX = 1      # spawn index for player (keep to 1)
 FIGSIZE_X_INCHES   = 8      # x figure size of feedback in inches
 FIGSIZE_Y_INCHES   = 8      # y figure size of feedback in inches
 PLOT_LEFT          = 0.1    # in fractions of figure width and height
-PLOT_BOT           = 0.1    
+PLOT_BOT           = 0.1
 PLOT_WIDTH         = 0.8
 PLOT_HEIGHT        = 0.8
 
 WAYPOINTS_FILENAME = 'racetrack_waypoints.txt'  # waypoint file to load
 DIST_THRESHOLD_TO_LAST_WAYPOINT = 2.0  # some distance from last position before
                                        # simulation ends
-                                       
+
 # Path interpolation parameters
 INTERP_MAX_POINTS_PLOT    = 10   # number of points used for displaying
                                  # lookahead path
@@ -93,7 +93,7 @@ def make_carla_settings(args):
     """Make a CarlaSettings object with the settings we need.
     """
     settings = CarlaSettings()
-    
+
     # There is no need for non-agent info requests if there are no pedestrians
     # or vehicles.
     get_non_player_agents_info = False
@@ -103,7 +103,7 @@ def make_carla_settings(args):
     # Base level settings
     settings.set(
         SynchronousMode=True,
-        SendNonPlayerAgentsInfo=get_non_player_agents_info, 
+        SendNonPlayerAgentsInfo=get_non_player_agents_info,
         NumberOfVehicles=NUM_VEHICLES,
         NumberOfPedestrians=NUM_PEDESTRIANS,
         SeedVehicles=SEED_VEHICLES,
@@ -114,7 +114,7 @@ def make_carla_settings(args):
 
 class Timer(object):
     """ Timer Class
-    
+
     The steps are used to calculate FPS, while the lap or seconds since lap is
     used to compute elapsed time.
     """
@@ -146,7 +146,7 @@ class Timer(object):
 
 def get_current_pose(measurement):
     """Obtains current x,y,yaw pose from the client measurements
-    
+
     Obtains the current x,y, and yaw pose from the client measurements.
 
     Args:
@@ -165,7 +165,7 @@ def get_current_pose(measurement):
 
 def get_start_pos(scene):
     """Obtains player start x,y, yaw pose from the scene
-    
+
     Obtains the player x,y, and yaw pose from the scene.
 
     Args:
@@ -182,10 +182,10 @@ def get_start_pos(scene):
 
     return (x, y, yaw)
 
-def send_control_command(client, throttle, steer, brake, 
+def send_control_command(client, throttle, steer, brake,
                          hand_brake=False, reverse=False):
     """Send control command to CARLA client.
-    
+
     Send control command to CARLA client.
 
     Args:
@@ -225,7 +225,7 @@ def write_trajectory_file(x_list, y_list, v_list, t_list):
     create_controller_output_dir(CONTROLLER_OUTPUT_FOLDER)
     file_name = os.path.join(CONTROLLER_OUTPUT_FOLDER, 'trajectory.txt')
 
-    with open(file_name, 'w') as trajectory_file: 
+    with open(file_name, 'w') as trajectory_file:
         for i in range(len(x_list)):
             trajectory_file.write('%3.3f, %3.3f, %2.3f, %6.3f\n' %\
                                   (x_list[i], y_list[i], v_list[i], t_list[i]))
@@ -245,7 +245,7 @@ def exec_waypoint_nav_demo(args):
         # CarlaSettings.ini file as string.
         scene = client.load_settings(settings)
 
-        # Refer to the player start folder in the WorldOutliner to see the 
+        # Refer to the player start folder in the WorldOutliner to see the
         # player start information
         player_start = PLAYER_START_INDEX
 
@@ -266,7 +266,7 @@ def exec_waypoint_nav_demo(args):
         # during the simulation run.
         config = configparser.ConfigParser()
         config.read(os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), 'options.cfg'))         
+                os.path.dirname(os.path.realpath(__file__)), 'options.cfg'))
         demo_opt = config['Demo Parameters']
 
         # Get options
@@ -284,7 +284,7 @@ def exec_waypoint_nav_demo(args):
         waypoints_file = WAYPOINTS_FILENAME
         waypoints_np   = None
         with open(waypoints_file) as waypoints_file_handle:
-            waypoints = list(csv.reader(waypoints_file_handle, 
+            waypoints = list(csv.reader(waypoints_file_handle,
                                         delimiter=',',
                                         quoting=csv.QUOTE_NONNUMERIC))
             waypoints_np = np.array(waypoints)
@@ -295,17 +295,17 @@ def exec_waypoint_nav_demo(args):
         # Interpolating between each waypoint will provide a finer resolution
         # path and make it more "continuous". A simple linear interpolation
         # is used as a preliminary method to address this issue, though it is
-        # better addressed with better interpolation methods (spline 
-        # interpolation, for example). 
+        # better addressed with better interpolation methods (spline
+        # interpolation, for example).
         # More appropriate interpolation methods will not be used here for the
         # sake of demonstration on what effects discrete paths can have on
         # the controller. It is made much more obvious with linear
         # interpolation, because in a way part of the path will be continuous
-        # while the discontinuous parts (which happens at the waypoints) will 
+        # while the discontinuous parts (which happens at the waypoints) will
         # show just what sort of effects these points have on the controller.
         # Can you spot these during the simulation? If so, how can you further
         # reduce these effects?
-        
+
         # Linear interpolation computations
         # Compute a list of distances between waypoints
         wp_distance = []   # distance array
@@ -317,7 +317,7 @@ def exec_waypoint_nav_demo(args):
                                # from the last waypoint to the last waypoint
 
         # Linearly interpolate between waypoints and store in a list
-        wp_interp      = []    # interpolated values 
+        wp_interp      = []    # interpolated values
                                # (rows = waypoints, columns = [x, y, v])
         wp_interp_hash = []    # hash table which indexes waypoints_np
                                # to the index of the waypoint in wp_interp
@@ -326,9 +326,9 @@ def exec_waypoint_nav_demo(args):
             # Add original waypoint to interpolated waypoints list (and append
             # it to the hash table)
             wp_interp.append(list(waypoints_np[i]))
-            wp_interp_hash.append(interp_counter)   
+            wp_interp_hash.append(interp_counter)
             interp_counter+=1
-            
+
             # Interpolate to the next waypoint. First compute the number of
             # points to interpolate based on the desired resolution and
             # incrementally add interpolated points until the next waypoint
@@ -343,7 +343,7 @@ def exec_waypoint_nav_demo(args):
                 interp_counter+=1
         # add last waypoint at the end
         wp_interp.append(list(waypoints_np[-1]))
-        wp_interp_hash.append(interp_counter)   
+        wp_interp_hash.append(interp_counter)
         interp_counter+=1
 
         #############################################
@@ -380,8 +380,8 @@ def exec_waypoint_nav_demo(args):
             # Last stamp
             if i == num_iterations - 1:
                 sim_duration = measurement_data.game_timestamp / 1000.0 -\
-                               sim_start_stamp  
-        
+                               sim_start_stamp
+
         # Outputs average simulation timestep and computes how many frames
         # will elapse before the simulation should end based on various
         # parameters that we set in the beginning.
@@ -412,17 +412,17 @@ def exec_waypoint_nav_demo(args):
         # the controller feedback (which includes the speed tracking).
         lp_traj = lv.LivePlotter(tk_title="Trajectory Trace")
         lp_1d = lv.LivePlotter(tk_title="Controls Feedback")
-        
+
         ###
         # Add 2D position / trajectory plot
         ###
         trajectory_fig = lp_traj.plot_new_dynamic_2d_figure(
-                title='Vehicle Trajectory',
+                title='Trajetória do Veículo',
                 figsize=(FIGSIZE_X_INCHES, FIGSIZE_Y_INCHES),
                 edgecolor="black",
                 rect=[PLOT_LEFT, PLOT_BOT, PLOT_WIDTH, PLOT_HEIGHT])
 
-        trajectory_fig.set_invert_x_axis() # Because UE4 uses left-handed 
+        trajectory_fig.set_invert_x_axis() # Because UE4 uses left-handed
                                            # coordinate system the X
                                            # axis in the graph is flipped
         trajectory_fig.set_axis_equal()    # X-Y spacing should be equal in size
@@ -433,64 +433,64 @@ def exec_waypoint_nav_demo(args):
                                  linestyle="-", marker="", color='g')
         # Add trajectory markers
         trajectory_fig.add_graph("trajectory", window_size=TOTAL_EPISODE_FRAMES,
-                                 x0=[start_x]*TOTAL_EPISODE_FRAMES, 
+                                 x0=[start_x]*TOTAL_EPISODE_FRAMES,
                                  y0=[start_y]*TOTAL_EPISODE_FRAMES,
                                  color=[1, 0.5, 0])
         # Add lookahead path
-        trajectory_fig.add_graph("lookahead_path", 
+        trajectory_fig.add_graph("lookahead_path",
                                  window_size=INTERP_MAX_POINTS_PLOT,
-                                 x0=[start_x]*INTERP_MAX_POINTS_PLOT, 
+                                 x0=[start_x]*INTERP_MAX_POINTS_PLOT,
                                  y0=[start_y]*INTERP_MAX_POINTS_PLOT,
                                  color=[0, 0.7, 0.7],
                                  linewidth=4)
         # Add starting position marker
-        trajectory_fig.add_graph("start_pos", window_size=1, 
+        trajectory_fig.add_graph("start_pos", window_size=1,
                                  x0=[start_x], y0=[start_y],
-                                 marker=11, color=[1, 0.5, 0], 
-                                 markertext="Start", marker_text_offset=1)
+                                 marker=11, color=[1, 0.5, 0],
+                                 markertext="Início", marker_text_offset=1)
         # Add end position marker
-        trajectory_fig.add_graph("end_pos", window_size=1, 
-                                 x0=[waypoints_np[-1, 0]], 
+        trajectory_fig.add_graph("end_pos", window_size=1,
+                                 x0=[waypoints_np[-1, 0]],
                                  y0=[waypoints_np[-1, 1]],
-                                 marker="D", color='r', 
-                                 markertext="End", marker_text_offset=1)
+                                 marker="D", color='r',
+                                 markertext="Fim", marker_text_offset=1)
         # Add car marker
-        trajectory_fig.add_graph("car", window_size=1, 
-                                 marker="s", color='b', markertext="Car",
+        trajectory_fig.add_graph("car", window_size=1,
+                                 marker="s", color='b', markertext="Carro",
                                  marker_text_offset=1)
 
         ###
         # Add 1D speed profile updater
         ###
         forward_speed_fig =\
-                lp_1d.plot_new_dynamic_figure(title="Forward Speed (m/s)")
-        forward_speed_fig.add_graph("forward_speed", 
-                                    label="forward_speed", 
+                lp_1d.plot_new_dynamic_figure(title="Velocidade de avanço (m/s)")
+        forward_speed_fig.add_graph("forward_speed",
+                                    label="forward_speed",
                                     window_size=TOTAL_EPISODE_FRAMES)
-        forward_speed_fig.add_graph("reference_signal", 
-                                    label="reference_Signal", 
+        forward_speed_fig.add_graph("reference_signal",
+                                    label="reference_Signal",
                                     window_size=TOTAL_EPISODE_FRAMES)
 
         # Add throttle signals graph
-        throttle_fig = lp_1d.plot_new_dynamic_figure(title="Throttle")
-        throttle_fig.add_graph("throttle", 
-                              label="throttle", 
+        throttle_fig = lp_1d.plot_new_dynamic_figure(title="Aceleração")
+        throttle_fig.add_graph("throttle",
+                              label="throttle",
                               window_size=TOTAL_EPISODE_FRAMES)
         # Add brake signals graph
-        brake_fig = lp_1d.plot_new_dynamic_figure(title="Brake")
-        brake_fig.add_graph("brake", 
-                              label="brake", 
+        brake_fig = lp_1d.plot_new_dynamic_figure(title="Freio")
+        brake_fig.add_graph("brake",
+                              label="brake",
                               window_size=TOTAL_EPISODE_FRAMES)
         # Add steering signals graph
-        steer_fig = lp_1d.plot_new_dynamic_figure(title="Steer")
-        steer_fig.add_graph("steer", 
-                              label="steer", 
+        steer_fig = lp_1d.plot_new_dynamic_figure(title="Direção")
+        steer_fig.add_graph("steer",
+                              label="steer",
                               window_size=TOTAL_EPISODE_FRAMES)
 
         # live plotter is disabled, hide windows
         if not enable_live_plot:
             lp_traj._root.withdraw()
-            lp_1d._root.withdraw()        
+            lp_1d._root.withdraw()
 
         # Iterate the frames until the end of the waypoints is reached or
         # the TOTAL_EPISODE_FRAMES is reached. The controller simulation then
@@ -516,23 +516,23 @@ def exec_waypoint_nav_demo(args):
                 continue
             else:
                 current_timestamp = current_timestamp - WAIT_TIME_BEFORE_START
-            
+
             # Store history
             x_history.append(current_x)
             y_history.append(current_y)
             yaw_history.append(current_yaw)
             speed_history.append(current_speed)
-            time_history.append(current_timestamp) 
+            time_history.append(current_timestamp)
 
             ###
             # Controller update (this uses the controller2d.py implementation)
             ###
 
             # To reduce the amount of waypoints sent to the controller,
-            # provide a subset of waypoints that are within some 
+            # provide a subset of waypoints that are within some
             # lookahead distance from the closest point to the car. Provide
             # a set of waypoints behind the car as well.
-            
+
             # Find closest waypoint index to car. First increment the index
             # from the previous index until the new distance calculations
             # are increasing. Apply the same rule decrementing the index.
@@ -568,7 +568,7 @@ def exec_waypoint_nav_demo(args):
 
             # Once the closest index is found, return the path that has 1
             # waypoint behind and X waypoints ahead, where X is the index
-            # that has a lookahead distance specified by 
+            # that has a lookahead distance specified by
             # INTERP_LOOKAHEAD_DISTANCE
             waypoint_subset_first_index = closest_index - 1
             if waypoint_subset_first_index < 0:
@@ -593,7 +593,7 @@ def exec_waypoint_nav_demo(args):
             controller.update_waypoints(new_waypoints)
 
             # Update the other controller values and controls
-            controller.update_values(current_x, current_y, current_yaw, 
+            controller.update_values(current_x, current_y, current_yaw,
                                      current_speed,
                                      current_timestamp, frame)
             controller.update_controls()
@@ -610,25 +610,25 @@ def exec_waypoint_nav_demo(args):
                 # (INTERP_MAX_POINTS_PLOT amount of points). This is meant
                 # to decrease load when live plotting
                 new_waypoints_np = np.array(new_waypoints)
-                path_indices = np.floor(np.linspace(0, 
+                path_indices = np.floor(np.linspace(0,
                                                     new_waypoints_np.shape[0]-1,
                                                     INTERP_MAX_POINTS_PLOT))
-                trajectory_fig.update("lookahead_path", 
+                trajectory_fig.update("lookahead_path",
                         new_waypoints_np[path_indices.astype(int), 0],
                         new_waypoints_np[path_indices.astype(int), 1],
                         new_colour=[0, 0.7, 0.7])
-                forward_speed_fig.roll("forward_speed", 
-                                       current_timestamp, 
+                forward_speed_fig.roll("forward_speed",
+                                       current_timestamp,
                                        current_speed)
-                forward_speed_fig.roll("reference_signal", 
-                                       current_timestamp, 
+                forward_speed_fig.roll("reference_signal",
+                                       current_timestamp,
                                        controller._desired_speed)
 
                 throttle_fig.roll("throttle", current_timestamp, cmd_throttle)
                 brake_fig.roll("brake", current_timestamp, cmd_brake)
                 steer_fig.roll("steer", current_timestamp, cmd_steer)
 
-                # Refresh the live plot based on the refresh rate 
+                # Refresh the live plot based on the refresh rate
                 # set by the options
                 if enable_live_plot and \
                    live_plot_timer.has_exceeded_lap_period():
@@ -740,4 +740,3 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         print('\nCancelled by user. Bye!')
-

@@ -184,13 +184,14 @@ class Controller2D(object):
             #v_error = v_desired - v
            # self.vars.sum_integral = self.vars.sum_integral + ( v_error * sample_time )  #integration term is turned into
            # derivative = (v_error - self.vars.v_previous_error) /
+            #eq 4.64
             v_current_error = v_desired - v
             v_total_error = self.vars.v_total_error + v_current_error * dt
             v_error_rate = (v_current_error - self.vars.v_previous_error) / dt
            # P_throttle = Kp_throttle * v_current_error
             #I_throttle = Ki_throttle * v_total_error
             #D_throttle = Kd_throttle * v_error_rate
-            throttle_feedback = ( k_p * v_current_error ) + (k_i * v_total_error)# + (k_d * v_error_rate)
+            throttle_feedback = ( k_p * v_current_error ) + (k_i * v_total_error) + (k_d * v_error_rate)
 
             throttle_output = throttle_feedback + throttle_forward
             brake_output    = 0

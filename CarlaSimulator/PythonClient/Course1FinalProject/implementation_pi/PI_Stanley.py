@@ -3,7 +3,7 @@
 """
 2D Controller Class to be used for the CARLA waypoint follower demo.
 """
-from math import sqrt, atan2, sin, cos
+
 import cutils
 import numpy as np
 
@@ -120,33 +120,13 @@ class Controller2D(object):
         #PID Gains
         k_p = 1 / 1.13
         k_i = k_p / 10
-        k_d = k_p * 0.1  # Adjust the multiplier as needed
 
         #latteral controller gains
         k = 2
         k_s = 10
-        """
-            Use 'self.vars.create_var(<variable name>, <default value>)'
-            to create a persistent variable (not destroyed at each iteration).
-            This means that the value can be stored for use in the next
-            iteration of the control loop.
-
-            Example: Creation of 'v_previous', default value to be 0
-            self.vars.create_var('v_previous', 0.0)
-
-            Example: Setting 'v_previous' to be 1.0
-            self.vars.v_previous = 1.0
-
-            Example: Accessing the value from 'v_previous' to be used
-            throttle_output = 0.5 * self.vars.v_previous
-        """
 
         self.vars.create_var('sum_integral', 0.0)
         self.vars.create_var('steer_output_old', 0.0)
-        self.vars.create_var('v_previous', 0.0)
-        self.vars.create_var('v_total_error', 0.0)
-        self.vars.create_var('v_previous_error', 0.0)
-        self.vars.create_var('t_previous', 0.0)
 
         # Skip the first frame to store previous values properly
         if self._start_control_loop:
@@ -179,18 +159,10 @@ class Controller2D(object):
             # feedback controller
             # ====================================================
 
-            #sample_time = 1 / 30                                                         # time step = 1 / FPS
-            dt = t - self.vars.t_previous
-            #v_error = v_desired - v
-           # self.vars.sum_integral = self.vars.sum_integral + ( v_error * sample_time )  #integration term is turned into
-           # derivative = (v_error - self.vars.v_previous_error) /
-            v_current_error = v_desired - v
-            v_total_error = self.vars.v_total_error + v_current_error * dt
-            v_error_rate = (v_current_error - self.vars.v_previous_error) / dt
-           # P_throttle = Kp_throttle * v_current_error
-            #I_throttle = Ki_throttle * v_total_error
-            #D_throttle = Kd_throttle * v_error_rate
-            throttle_feedback = ( k_p * v_current_error ) + (k_i * v_total_error)# + (k_d * v_error_rate)
+            sample_time = 1 / 30                                                         # time step = 1 / FPS
+            v_error = v_desired - v
+            self.vars.sum_integral = self.vars.sum_integral + ( v_error * sample_time )  #integration term is turned into submission
+            throttle_feedback = ( k_p * v_error ) + ( k_i * self.vars.sum_integral )
 
             throttle_output = throttle_feedback + throttle_forward
             brake_output    = 0
@@ -200,32 +172,62 @@ class Controller2D(object):
             # MODULE 7: IMPLEMENTATION OF LATERAL CONTROLLER HERE
             ######################################################
             ######################################################
-            """
-                Implement a lateral controller here. Remember that you can
-                access the persistent variables declared above here. For
-                example, can treat self.vars.v_previous like a "global variable".
-            """
-            Kp_ld = 0.8
-            min_ld = 10
-            L = 3
 
-            x_rear = x - L * cos(yaw) / 2
-            y_rear = y - L * sin(yaw) / 2
-            lookahead_distance = max(min_ld, Kp_ld * v)
-            #print(lookahead_distance)
-            #print (yaw,"   ",path_heading,"   ",heading_error,"   ",cross_track_error_term,"   ",steer_output)
+            x_desired = waypoints[min_index][0]
+            y_desired = waypoints[min_index][1]
 
-            for wp in waypoints:
-                dist = sqrt((wp[0] - x_rear)**2 + (wp[1] - y)**2)
-                if dist > lookahead_distance:
-                    carrot = wp
-                    break
+            count = len(range(min_index, len(waypoints)))
+            #########################################################
+            # Calculation of heading error : psi = path_heading - yaw
+            #########################################################
+            if min_index != -1 :
+                if count > 9 :
+                    dx = waypoints[min_index+10][0] - x_desired
+                    dy = waypoints[min_index+10][1] - y_desired
+                else :
+                    dx = x_desired - waypoints[min_index - 10][0]
+                    dy = y_desired - waypoints[min_index - 10][1]
+
+            else :
+                dx = x_desired - waypoints[min_index - 10][0]
+                dy = y_desired - waypoints[min_index - 10][1]
+
+            path_heading = np.arctan2(dy,dx)
+
+            heading_error = path_heading - yaw
+
+            ############################################################
+            # Calculation of cross track error : e = sqrt( dx^2 + dy^2 )
+            ############################################################
+            dx = x - x_desired
+            dy = y - y_desired
+            cross_track_error = np.sqrt((dx**2)+(dy**2))
+
+            #the following codeblock finds out the vehicle position with respect to path (i.e. either on the left or on the right)
+            if np.sin(path_heading) < 0 :
+                if dx > 0:                                                                          # vehicle on right of the path
+                    if cross_track_error < 0.1:
+                        cross_track_error_term = 0
+                    else:
+                        cross_track_error_term = -np.arctan((k * cross_track_error) / (k_s + v))    # steer left
+                else:                                                                               # vehicle on left of the path
+                    if cross_track_error < 0.1:
+                        cross_track_error_term = 0
+                    else:
+                        cross_track_error_term = np.arctan((k * cross_track_error) / (k_s + v))     # steer right
             else:
-                carrot = waypoints[0]
-            alpha = atan2(carrot[1] - y_rear, carrot[0] - x_rear) - yaw
+                if dx < 0:                                                                          # vehicle on right of the path
+                    if cross_track_error < 0.1:
+                        cross_track_error_term = 0
+                    else:
+                        cross_track_error_term = -np.arctan((k * cross_track_error) / (k_s + v))    # steer left
+                else:                                                                               # vehicle on left of the path
+                    if cross_track_error < 0.1:
+                        cross_track_error_term = 0
+                    else:
+                        cross_track_error_term = np.arctan((k * cross_track_error) / (k_s + v))     # steer right
 
-            # Change the steer output with the lateral controller.
-            steer_output    = atan2(2 * L * sin(alpha), lookahead_distance)
+            steer_output = heading_error + cross_track_error_term
 
             ######################################################
             # SET CONTROLS OUTPUT
@@ -234,20 +236,17 @@ class Controller2D(object):
             self.set_steer(steer_output)        # in rad (-1.22 to 1.22)
             self.set_brake(brake_output)        # in percent (0 to 1)
 
-            print ("yaw: ",yaw," lookahead_distance: ",lookahead_distance," steer_output: ",steer_output," throttle_output:", throttle_output," brake_output:", brake_output)
+            print (yaw,"   ",path_heading,"   ",heading_error,"   ",cross_track_error_term,"   ",steer_output)
 
         ######################################################
         ######################################################
         # MODULE 7: STORE OLD VALUES HERE (ADD MORE IF NECESSARY)
         ######################################################
         ######################################################
-        """
-            Use this block to store old values (for example, we can store the
-            current x, y, and yaw values here using persistent variables for use
-            in the next iteration)
-        """
-        self.vars.v_previous = v  # Store forward speed to be used in next step
-        self.vars.v_total_error = v_total_error # From PID implementation
-        self.vars.v_previous_error = v_current_error # From PID implementation
-        self.vars.t_previous = t
-        self.vars.steer_output_old = steer_output # Stanley controller
+        self.vars.steer_output_old = steer_output
+
+
+
+
+
+

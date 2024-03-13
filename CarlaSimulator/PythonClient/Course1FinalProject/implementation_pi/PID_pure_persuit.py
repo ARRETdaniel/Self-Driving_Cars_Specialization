@@ -3,6 +3,7 @@
 """
 2D Controller Class to be used for the CARLA waypoint follower demo.
 """
+
 from math import sqrt, atan2, sin, cos
 import cutils
 import numpy as np
@@ -37,23 +38,21 @@ class Controller2D(object):
             self._start_control_loop = True
 
     def update_desired_speed(self):
-        min_idx = 0
-        min_dist = float("inf")
+        min_idx       = 0
+        min_dist      = float("inf")
         desired_speed = 0
         for i in range(len(self._waypoints)):
             dist = np.linalg.norm(np.array([
-                self._waypoints[i][0] - self._current_x,
-                self._waypoints[i][1] - self._current_y]))
+                    self._waypoints[i][0] - self._current_x,
+                    self._waypoints[i][1] - self._current_y]))
             if dist < min_dist:
                 min_dist = dist
                 min_idx = i
-        if min_idx < len(self._waypoints) - 1:
-            self._desired_speed = self._waypoints[min_idx][2]
-            return min_idx
+        if min_idx < len(self._waypoints)-1:
+            desired_speed = self._waypoints[min_idx][2]
         else:
-            self._desired_speed = self._waypoints[-1][2]
-            x = -1
-            return x
+            desired_speed = self._waypoints[-1][2]
+        self._desired_speed = desired_speed
 
     def update_waypoints(self, new_waypoints):
         self._waypoints = new_waypoints
@@ -87,7 +86,7 @@ class Controller2D(object):
         y               = self._current_y
         yaw             = self._current_yaw
         v               = self._current_speed
-        min_index = self.update_desired_speed()
+        self.update_desired_speed()
         v_desired       = self._desired_speed
         t               = self._current_timestamp
         waypoints       = self._waypoints
@@ -100,31 +99,6 @@ class Controller2D(object):
         # MODULE 7: DECLARE USAGE VARIABLES HERE
         ######################################################
         ######################################################
-
-        # Throttle to engine torque
-        a_0 = 400
-        a_1 = 0.1
-        a_2 = -0.0002
-
-        # Gear ratio, effective radius, mass + inertia
-        GR = 0.35
-        r_e = 0.3
-        J_e = 10
-        m = 2000
-        g = 9.81
-
-        # Aerodynamic and friction coefficients
-        c_a = 1.36
-        c_r1 = 0.01
-
-        #PID Gains
-        k_p = 1 / 1.13
-        k_i = k_p / 10
-        k_d = k_p * 0.1  # Adjust the multiplier as needed
-
-        #latteral controller gains
-        k = 2
-        k_s = 10
         """
             Use 'self.vars.create_var(<variable name>, <default value>)'
             to create a persistent variable (not destroyed at each iteration).
@@ -140,9 +114,6 @@ class Controller2D(object):
             Example: Accessing the value from 'v_previous' to be used
             throttle_output = 0.5 * self.vars.v_previous
         """
-
-        self.vars.create_var('sum_integral', 0.0)
-        self.vars.create_var('steer_output_old', 0.0)
         self.vars.create_var('v_previous', 0.0)
         self.vars.create_var('v_total_error', 0.0)
         self.vars.create_var('v_previous_error', 0.0)
@@ -150,49 +121,64 @@ class Controller2D(object):
 
         # Skip the first frame to store previous values properly
         if self._start_control_loop:
+            """
+                Controller iteration code block.
+
+                Controller Feedback Variables:
+                    x               : Current X position (meters)
+                    y               : Current Y position (meters)
+                    yaw             : Current yaw pose (radians)
+                    v               : Current forward speed (meters per second)
+                    t               : Current time (seconds)
+                    v_desired       : Current desired speed (meters per second)
+                                      (Computed as the speed to track at the
+                                      closest waypoint to the vehicle.)
+                    waypoints       : Current waypoints to track
+                                      (Includes speed to track at each x,y
+                                      location.)
+                                      Format: [[x0, y0, v0],
+                                               [x1, y1, v1],
+                                               ...
+                                               [xn, yn, vn]]
+                                      Example:
+                                          waypoints[2][1]:
+                                          Returns the 3rd waypoint's y position
+
+                                          waypoints[5]:
+                                          Returns [x5, y5, v5] (6th waypoint)
+
+                Controller Output Variables:
+                    throttle_output : Throttle output (0 to 1)
+                    steer_output    : Steer output (-1.22 rad to 1.22 rad)
+                    brake_output    : Brake output (0 to 1)
+            """
+
             ######################################################
             ######################################################
             # MODULE 7: IMPLEMENTATION OF LONGITUDINAL CONTROLLER HERE
             ######################################################
             ######################################################
+            """
+                Implement a longitudinal controller here. Remember that you can
+                access the persistent variables declared above here. For
+                example, can treat self.vars.v_previous like a "global variable".
+            """
 
-            # ====================================================
-            # feed forward controller
-            # ====================================================
-            # calculate F_load and T_e respectively
-            # F_load calculations
-            f_aero = c_a * (v_desired ** 2)
-            r_x = c_r1 * v_desired
-            f_g = m * g * np.sin(0)
-            f_load = f_aero + r_x + f_g
+            # Change these outputs with the longitudinal controller. Note that
+            # brake_output is optional and is not required to pass the
+            # assignment, as the car will naturally slow down over time.
+            Kp_throttle = 2
+            Ki_throttle = 1
+            Kd_throttle = 0.5
 
-            # T_e calculation (assuming t_e = t_load)
-            t_e = GR * r_e * f_load
-
-            # calculate engine speed w_e
-            w_e = v_desired / (GR * r_e)
-
-            # now update throttle according to the updated engine speed w_e
-            throttle_forward = t_e / (a_0 + (a_1 * w_e) + (a_2 * w_e ** 2))
-
-            # ====================================================
-            # feedback controller
-            # ====================================================
-
-            #sample_time = 1 / 30                                                         # time step = 1 / FPS
             dt = t - self.vars.t_previous
-            #v_error = v_desired - v
-           # self.vars.sum_integral = self.vars.sum_integral + ( v_error * sample_time )  #integration term is turned into
-           # derivative = (v_error - self.vars.v_previous_error) /
             v_current_error = v_desired - v
             v_total_error = self.vars.v_total_error + v_current_error * dt
             v_error_rate = (v_current_error - self.vars.v_previous_error) / dt
-           # P_throttle = Kp_throttle * v_current_error
-            #I_throttle = Ki_throttle * v_total_error
-            #D_throttle = Kd_throttle * v_error_rate
-            throttle_feedback = ( k_p * v_current_error ) + (k_i * v_total_error)# + (k_d * v_error_rate)
-
-            throttle_output = throttle_feedback + throttle_forward
+            P_throttle = Kp_throttle * v_current_error
+            I_throttle = Ki_throttle * v_total_error
+            D_throttle = Kd_throttle * v_error_rate
+            throttle_output = P_throttle + I_throttle + D_throttle
             brake_output    = 0
 
             ######################################################
@@ -212,9 +198,7 @@ class Controller2D(object):
             x_rear = x - L * cos(yaw) / 2
             y_rear = y - L * sin(yaw) / 2
             lookahead_distance = max(min_ld, Kp_ld * v)
-            #print(lookahead_distance)
-            #print (yaw,"   ",path_heading,"   ",heading_error,"   ",cross_track_error_term,"   ",steer_output)
-
+            print(lookahead_distance)
             for wp in waypoints:
                 dist = sqrt((wp[0] - x_rear)**2 + (wp[1] - y)**2)
                 if dist > lookahead_distance:
@@ -234,8 +218,6 @@ class Controller2D(object):
             self.set_steer(steer_output)        # in rad (-1.22 to 1.22)
             self.set_brake(brake_output)        # in percent (0 to 1)
 
-            print ("yaw: ",yaw," lookahead_distance: ",lookahead_distance," steer_output: ",steer_output," throttle_output:", throttle_output," brake_output:", brake_output)
-
         ######################################################
         ######################################################
         # MODULE 7: STORE OLD VALUES HERE (ADD MORE IF NECESSARY)
@@ -247,7 +229,7 @@ class Controller2D(object):
             in the next iteration)
         """
         self.vars.v_previous = v  # Store forward speed to be used in next step
-        self.vars.v_total_error = v_total_error # From PID implementation
-        self.vars.v_previous_error = v_current_error # From PID implementation
+        self.vars.v_total_error = v_total_error
+        self.vars.v_previous_error = v_current_error
         self.vars.t_previous = t
-        self.vars.steer_output_old = steer_output # Stanley controller
+        #self.vars.steer_output_old = steer_output # Stanley controller

@@ -107,6 +107,7 @@ def display_path(results):
     plt.xlabel('x (m)')
     plt.ylabel('y (m)')
     plt.title('Pontos de ref e Caminho da solução')
+    plt.title('Pontos de Referência')
     #plt.title('Waypoints and Solution Path')
 
     plt.subplots()

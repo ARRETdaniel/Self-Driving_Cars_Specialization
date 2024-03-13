@@ -42,7 +42,7 @@ class CarlaSettings(object):
         self.PlayerVehicle = None
         self.NumberOfVehicles = 20
         self.NumberOfPedestrians = 30
-        self.WeatherId = 1
+        self.WeatherId = 6
         self.SeedVehicles = None
         self.SeedPedestrians = None
         self.DisableTwoWheeledVehicles = False

@@ -1,0 +1,2 @@
+`~ =  command
+g = no stats on the left
