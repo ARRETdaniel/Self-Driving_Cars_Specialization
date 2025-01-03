@@ -1,0 +1,2 @@
+X(m), Y(m), Z(m), YAW(deg), BOX_X_RADIUS(m), BOX_Y_RADIUS(m), BOX_Z_RADIUS(m)
+398, 301, 38.10, 180.0, 10.5, 7.5, 0

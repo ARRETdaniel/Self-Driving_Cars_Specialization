@@ -1,0 +1,12 @@
+continue:
+
+ 3. Make the build. This may take an hour or two depending on your system.
+ https://carla.readthedocs.io/en/latest/build_linux/
+
+ and
+
+ https://github.com/carla-simulator/carla-map-editor?tab=readme-ov-file
+
+ later
+
+ darknet for ubuntu https://github.com/hank-ai/darknet?tab=readme-ov-file#linux-cmake-method

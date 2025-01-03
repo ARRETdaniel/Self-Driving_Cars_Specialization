@@ -88,11 +88,13 @@ def run_carla_client(host, port, far):
                 # We use the image_RGB to colorize each 3D point, this is optional.
                 # "max_depth" is used to keep only the points that are near to the
                 # camera, meaning 1.0 the farest points (sky)
+                
                 point_cloud = depth_to_local_point_cloud(
                     sensor_data['CameraDepth'],
                     image_RGB,
                     max_depth=far
                 )
+                
 
                 # (Camera) local 3d to world 3d.
                 # Get the transform from the player protobuf transformation.
@@ -113,9 +115,11 @@ def run_carla_client(host, port, far):
                 # Save PLY to disk
                 # This generates the PLY string with the 3D points and the RGB colors
                 # for each row of the file.
+                
                 point_cloud.save_to_disk(os.path.join(
                     output_folder, '{:0>5}.ply'.format(frame))
                 )
+                
 
                 print_message(timer.milliseconds(), len(point_cloud), frame)
 

@@ -190,7 +190,7 @@ class Controller2D(object):
            # P_throttle = Kp_throttle * v_current_error
             #I_throttle = Ki_throttle * v_total_error
             #D_throttle = Kd_throttle * v_error_rate
-            throttle_feedback = ( k_p * v_current_error ) + (k_i * v_total_error)# + (k_d * v_error_rate)
+            throttle_feedback = ( k_p * v_current_error )# + (k_i * v_total_error)# + (k_d * v_error_rate)
 
             throttle_output = throttle_feedback + throttle_forward
             brake_output    = 0

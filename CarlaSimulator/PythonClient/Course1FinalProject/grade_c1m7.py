@@ -3,6 +3,9 @@
 # grading script given to learners, this file should work in both Python 2 and 3
 ################################################################
 # running script: python grade_c1m7.py racetrack_waypoints.txt controller_output\trajectory.txt
+#
+#python grade_c1m7.py racetrack_waypoints.txt controller_output\trajectory.txt
+#
 ################################################################
 from __future__ import division
 import sys

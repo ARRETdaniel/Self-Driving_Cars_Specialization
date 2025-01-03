@@ -47,7 +47,13 @@ class CarlaSettings(object):
         self.SeedPedestrians = None
         self.DisableTwoWheeledVehicles = False
         self.set(**kwargs)
-        self._sensors = []
+        # Add a camera sensor to the player vehicle
+        #camera = carla_sensor.Camera('CAMERA')
+        #camera.set_image_size(800, 600)
+        #camera.set_position(2.0, 0.0, 1.4)
+        #self.add_sensor(camera)
+        self._sensors = [] # old. was just this for camera
+
 
     def set(self, **kwargs):
         for key, value in kwargs.items():

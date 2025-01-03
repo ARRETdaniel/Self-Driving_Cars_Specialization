@@ -22,12 +22,13 @@ Then, in another terminal (or the same terminal), run the example Python client
   #RUNNING SOLUTION
   \> C:
   \> cd \Coursera\CarlaSimulator
-  \> CarlaUE4.exe /Game/Maps/RaceTrack -windowed -carla-server -benchmark -fps=30
+  \> .\ CarlaUE4.exe /Game/Maps/RaceTrack -windowed -carla-server -benchmark -fps=30
+ CarlaUE4.exe  -windowed -carla-server -benchmark -fps=30
 
    In another terminal, change the directory to go into the "Course1FinalProject" folder, under the "PythonClient" folder.
   \> C:
   \> cd \Coursera\CarlaSimulator\PythonClient\Course1FinalProject
-  \> python module_7.py
+python module_7.py
 
 
 - To close the CARLA simulation session, press Alt-F4

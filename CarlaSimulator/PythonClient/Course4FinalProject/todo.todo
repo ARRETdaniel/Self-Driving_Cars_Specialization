@@ -1,0 +1,10 @@
+1. try to make a decision ralated to object idetified:
+  - get the object location (x,y,z). In this case, maybe just x will be necessary.
+  - pass data to file
+  - read file
+2. identify speed sign & take action (show info on screen or pass data to BehaviouralPlanner):
+  - slow car speed on cmd...
+
+
+
+town2 seens to be a good city for tests

@@ -101,8 +101,10 @@ class Camera(Sensor):
     def __init__(self, name, **kwargs):
         super(Camera, self).__init__(name, sensor_type="CAMERA")
         self.PostProcessing = 'SceneFinal'
-        self.ImageSizeX = 720
-        self.ImageSizeY = 512
+        self.ImageSizeX = 800
+        #self.ImageSizeX = 720
+        self.ImageSizeY = 600
+        #self.ImageSizeY = 512
         self.FOV = 90.0
         self.set(**kwargs)
 

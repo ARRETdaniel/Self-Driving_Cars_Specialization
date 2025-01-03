@@ -1,0 +1,22 @@
+'''
+global darknet_process
+message_dark = 'Darknet Started'
+## starting darknet
+def darknet(message_dark):
+    os.chdir("C:/src/darknet")
+    #os.chdir("C:/Users/NAME/Desktop/darknet-master/build/darknet/x64")
+    #process = popen_spawn.PopenSpawn('detector test data/obj.data \
+    #process = popen_spawn.PopenSpawn('darknet detector test cfg/coco.data cfg/yolov7.cfg yolov7.weights -ext_output -save_labels')
+    process = popen_spawn.PopenSpawn('darknet detector test cfg/coco.data cfg/yolov7.cfg yolov7.weights -dont_show -ext_output -save_labels')
+    #process = popen_spawn.PopenSpawn('darknet detector test data/obj.data \
+    #                                yolov3-tiny-obj.cfg yolov3-tiny-obj_5000.weights \
+    #                                -dont_show -ext_output -save_labels') #Running Darknet
+    print(message_dark)
+    return process
+darknet_process = darknet
+darknet detector test C:/src/darknet/cfg/coco.data C:/src/darknet/cfg/yolov7.cfg C:/src/darknet/yolov7.weights C:/Users/danie/Documents/Documents/CURSOS/Self-Driving_Cars_Specialization/CarlaSimulator/PythonClient/Course4FinalProject/_out/episode_3360/CameraRGB/000001.png
+darknet detector test cfg/coco.data cfg/yolov7.cfg yolov7.weights C:\Users\danie\Documents\Documents\CURSOS\Self-Driving_Cars_Specialization\CarlaSimulator\PythonClient\Course4FinalProject\_out\episode_3360\CameraRGB\000001.png(message_dark)
+'''
+
+
+## end darknet
